@@ -17,6 +17,13 @@ abstract class Stems {
 	const CaseSensitive = '__PEACH_CASE_SENSITIVE__';
 	const CaseInsensitive = '__PEACH_CASE_INSENSITIVE__';
 }
+
+class PeachExceptions {
+	static function GenerateTypeException($String, $Expected)
+	{
+		return 'Type mismatch: argument expected to be of type \''.$Expected.'\', but \''.gettype($String).'\' given.';
+	}
+}
 	
 class Peach {
 	public $Datatypes;
@@ -26,24 +33,37 @@ class Peach {
 		$This->Datatypes = array();
 	}
 	
-	// Base method for array handling. We can't use Array() for our method name
-	// because it can't be overridden, but PHP's "arrays" are hashes anyway
-	// so let's do that.
-	public function Hash(){
-		if (is_array(
-	}
-	// Base method for string handling
-	public function String($String){
-		if (is_string($String)) {
-			$this->Datatypes[] = "string";
-			$this->Data = $String;
-			return $this;
+	private function TypeCheck($Data, $Type){
+		// We store a separate "PHPTtype" value reflecting PHP's internal type
+		// naming so that our exception text can include Peach's improved types
+		$PHPType = strtolower($Type); 
+		if ($PHPType == "hash") { $PHPType = "array"; }
+		if (gettype($Data) == strtolower($PHPType)) {
+			return true;
 		} else {
-			throw new Exception('Type mismatch: argument expected to be of type \'string\', but \''.gettype($string).'\' given.');
+			throw new Exception(PeachExceptions::GenerateTypeException($Data, $Type));
 		}
 	}
 	
+	// Base method for array handling. We can't use Array() for our method name
+	// because it can't be overridden, but PHP's "arrays" are hashes anyway
+	// so let's do that.
+	public function Hash($Data){
+		$this->TypeCheck($Data, 'Hash');
+		$this->Datatypes[] = "hash";
+		$this->Data = $Data;
+		return $this;
+	}
+	// Base method for string handling
+	public function String($Data){
+		$this->TypeCheck($Data, 'String');
+		$this->Datatypes[] = "string";
+		$this->Data = $Data;
+		return $this;
+	}
+	
 		public function Length() {
+			$this->TypeCheck($this->Data, 'String');
 			return strlen($this->Data);
 		}
 	
@@ -53,7 +73,7 @@ class Peach {
 			// on whether it's null. In fact, a null/false/0 Length means it'll 
 			// return an empty string, which is baffling because I can't imagine
 			// any circumstances in which this behavior would be in any way desirable.
-		
+			$this->TypeCheck($this->Data, 'String');
 			if ($Length !== null){
 				return substr($this->Data, $Start, $Length);
 			} else {
@@ -63,10 +83,11 @@ class Peach {
 		
 		public function Replace($Search, $Replace, $CaseSensitive = Stems::CaseSensitive, $Count = null)
 		{
-			if ($CaseSensitive = Stems::CaseSensitive) {
-				return str_replace();
+			$this->TypeCheck($this->Data, 'String');
+			if ($CaseSensitive == Stems::CaseSensitive) {
+				return str_replace($Search, $Replace, $this->Data, $Count);
 			} else {
-			
+				return str_ireplace($Search, $Replace, $this->Data, $Count);
 			}
 		}
 }
