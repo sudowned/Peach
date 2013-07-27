@@ -57,6 +57,20 @@ class Peach {
 		}
 	}
 	
+	private function IsRegex($String){
+		$this->TypeCheck($Value, 'String');
+		$Config = ini_get('track_errors');
+		ini_set('track_errors', 'on');
+		$Error = '';
+		@preg_match($String, '');
+		ini_set('track_errors', 'off');
+		if ($Error) {
+			return false;
+		} else {
+			return true;
+		}
+	}
+	
 	private function Pass() {
 		//Passes data by copying the object
 		$Pass = clone $this;
@@ -214,7 +228,12 @@ class Peach {
 		public function Filter($Criteria)
 		{
 			$this->TypeCheck($this->Value, array('hash'));
+			$this->TypeCheck($Criteria, array('string'));
 			$Pass = $this->Pass();
+			
+			if ($this->IsRegex($Criteria)){
+				
+			}
 			
 		}
 }
