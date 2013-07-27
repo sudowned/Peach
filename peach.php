@@ -203,4 +203,18 @@ class Peach {
 				return in_array(strtolower($Search), array_map('strtolower', $Pass->Value));
 			}
 		}
+		
+		public function Keys()
+		{
+			$this->TypeCheck($this->Value, array('hash'));
+			$Pass = $this->Pass();
+			return array_keys($Pass->Value);
+		}
+		
+		public function Filter($Criteria)
+		{
+			$this->TypeCheck($this->Value, array('hash'));
+			$Pass = $this->Pass();
+			
+		}
 }
