@@ -2,13 +2,11 @@
 include('peach.php');
 $String = Peach::String('lol! look out below, guys');
 $String2 = Peach::String('i guarantee this breaks it');
-echo ($String->Replace("LOL", "i am amused", false));
-echo("\n");
-echo($String->Contains('lol'));
-echo("\n");
+$String = $String->Replace("LOL", "i am amused", false);
+echo("\nbirds: ".$String->Contains('amused')."\n");
 echo($String);
-echo("\n");
-echo($String->Split(' ')->Contains('look').Join(' ');
+echo("\nbees: ");
+echo($String->Split(' ')->Contains('look'));
 echo("\n");
 /*
 // Test for memory leaks. If uncommenting this block causes

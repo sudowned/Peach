@@ -30,20 +30,18 @@ abstract class PeachExceptions {
 
 abstract class Peach {
 	public function String($Value){
-		$Peach = new PeachData();
-		$Peach = $Peach->String($Value);
+		$Peach = new PeachString($Value);
 		Return $Peach;
 	}
 	
 	public function Hash($Value){
-		$Peach = new PeachData();
-		$Peach = $Peach->Hash($Value);
+		$Peach = new PeachHash($Value);
 		Return $Peach;
 	}
 	
 	public function TypeCheck($Value, $Types){
 		// We store a separate "PHPType" value reflecting PHP's internal
-		// type naming so that our exception text can include Peach's
+		// type names so that our exception text can include Peach's
 		// improved types
 		if (!is_array($Types)) { $Types = array($Types); }
 		
@@ -54,6 +52,7 @@ abstract class Peach {
 		}
 		
 		if (in_array(gettype($Value), $PHPTypes)) {
+			//print("\n".print_r($PHPTypes, false)."\n value type: ".gettype($Value)."\n value: ".$Value."\n");
 			return true;
 		} else {
 			throw new Exception(
@@ -79,12 +78,17 @@ abstract class Peach {
 		}
 	}
 	
+	// Returns the PeachData object's value
+	public function Pick($Value) {
+	
+	}
+	
 }
 
 
 class PeachData {
-	private $Datatypes;
-	public $Value;
+	protected $Datatypes;
+	protected $Value;
 
 	function __CONSTRUCT() {
 		$this->Datatypes = array();
@@ -102,7 +106,7 @@ class PeachData {
 	// Utilities //
 	///////////////
 	
-	private function Pass() {
+	protected function Pass() {
 		//Passes data by copying the object
 		$Pass = clone $this;
 		return $Pass;
@@ -110,42 +114,30 @@ class PeachData {
 	
 	// Because __toString() is the only magic "getter", only strings can be returned
 	// from the Peach object natively without a final, returning function.
-	function Get() {
+	public function Get() {
 		return $this->Value;
 	}
+	
+	public function Set($Data) {
+		TypeCheck(Data, $this->Datatypes);
+		$this->Value = $Data;
+	}
+	
+}
 
-	///////////////////////////
-	// INSTANTIATION METHODS //
-	///////////////////////////
-	
-	// Base method for array handling. We can't use Array() for our method name
-	// because it can't be overridden, but PHP's "arrays" are hashes anyway
-	// so let's do that.
-	public function Hash($Value){
-		Peach::TypeCheck($Value, 'Hash');
-		$Pass = $this->Pass();
-		$Pass->Datatypes[] = "hash";
-		$Pass->Value = $Value;
-		return $Pass;
-	}
-	
-	// Base method for string creation
-	public function String($Value){
-		Peach::TypeCheck($Value, 'String');
-		$Pass = $this->Pass();
-		$Pass->Datatypes[] = "string";
-		$Pass->Value = $Value;
-		return $Pass;
-	}
-	
+class PeachString extends PeachData {	
 	////////////////////
 	// STRING METHODS //
 	////////////////////
-
+	
+	// Base method for string creation
+	public function __construct($Value){
+		Peach::TypeCheck($Value, 'String');
+		$this->Datatypes[] = "string";
+		$this->Value = $Value;
+	}
+	
 	public function Length() {
-		if (in_array('hash', $this->Datatypes)) {
-			return $this->Array_Length();
-		}
 		Peach::TypeCheck($this->Value, 'String');
 		$Pass = $this->Pass();
 		return strlen($Pass->Value);
@@ -182,16 +174,16 @@ class PeachData {
 	
 	public function Contains($Search, $CaseSensitive = Stems::CaseSensitive, $Offset = 0) {
 			$Pass = $this->Pass();
-			if (in_array('hash', $Pass->Datatypes)) {
-				return $Pass->Array_Contains($Search, $CaseSensitive);
-			}
 			
 			Peach::TypeCheck($this->Value, 'String');
 			if ($CaseSensitive == Stems::CaseSensitive) {
-				return strpos($Pass->Value, $Search, $Offset);
+				$return  = strpos($Pass->Value, $Search, $Offset);
 			} else {
-				return strpos($Pass->Value, $Search, $Offset);
+				$return = stripos($Pass->Value, $Search, $Offset);
 			}
+			
+			if ($return === FALSE) return -1;
+			return $return;
 	}
 	
 	public function Uppercase()
@@ -218,21 +210,36 @@ class PeachData {
 		$Pass = $this->Pass();
 		
 		if (is_numeric($By)){
-			$Pass->Value = str_split($Pass->Value, $By);
+			return Peach::Hash(str_split($Pass->Value, $By));
 		} else if (strlen($By) < 1) {
-			$Pass->Value = str_split($Pass->Value, 1);
+			return Peach::Hash(str_split($Pass->Value, 1));
 		} else if (is_string($By)) {
-			$Pass->Value = explode($By, $Pass->Value);
+			return Peach::Hash(explode($By, $Pass->Value));
+		} else {
+			throw new Exception(
+				PeachExceptions::GenerateTypeException(
+					$Pass->Value,
+					implode(', ', array("string", "array"))
+				)
+			);
 		}
-		
-		$Pass->Datatypes = array("hash");
-		
-		return $Pass;
+			
 	}
-	
+}
+
+class PeachHash extends PeachData {	
 	//////////////////
 	// HASH METHODS //
 	//////////////////
+	//
+	// Base method for array handling. We can't use Array() for our method name
+	// because it can't be overridden, but PHP's "arrays" are hashes anyway
+	// so let's do that.
+	public function __construct($Value){
+		Peach::TypeCheck($Value, 'Hash');
+		$this->Datatypes[] = "hash";
+		$this->Value = $Value;
+	}
 	
 	public function Join($Glue = ''){
 	// Glues an array together into a string with $Glue used as a delimiter.
@@ -247,7 +254,7 @@ class PeachData {
 		return $Pass;
 	}
 	
-	public function Array_Contains($Search, $CaseSensitive){
+	public function Contains($Search, $CaseSensitive = Stems::CaseSensitive){
 	// Searches an array to see if it contains the string provided. I can't
 	// implement namespaces within Peach without screwing up the calling
 	// syntax so the string Contains() method contains logic to call this
@@ -262,7 +269,7 @@ class PeachData {
 		}
 	}
 	
-	public function Array_Length()
+	public function Length()
 	{
 		Peach::TypeCheck($this->Value, array('hash'));
 		return sizeOf($this->Value);
