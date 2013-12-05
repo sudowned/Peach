@@ -8,7 +8,7 @@ echo($String->Contains('lol'));
 echo("\n");
 echo($String);
 echo("\n");
-echo($String->Split(' ')->Contains('look'));
+echo($String->Split(' ')->Contains('look').Join(' ');
 echo("\n");
 /*
 // Test for memory leaks. If uncommenting this block causes
