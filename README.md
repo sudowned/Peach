@@ -214,7 +214,7 @@ will be inserted.
 
 ###String Methods
 `Contains(String)`
-**Supported datatypes:** `(Peach) String`,`String` 
+**Supported datatypes:** `(Peach) String`,`String`.
 **Arguments:** (1) String containing substring to search for
 Checks whether the variable contains the data provided.
 
