@@ -1,7 +1,7 @@
 <?
 include('peach.php');
-$Peach = new Peach();
-$String = $Peach->String('lol! look out below, guys');
+$String = Peach::String('lol! look out below, guys');
+$String2 = Peach::String('i guarantee this breaks it');
 echo ($String->Replace("LOL", "i am amused", false));
 echo("\n");
 echo($String->Contains('lol'));

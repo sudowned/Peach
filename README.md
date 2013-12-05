@@ -31,7 +31,7 @@ name's been mangled.
 **Unreliable argument order**
 
 This one's more insidious, and for a beginner you don't really
-notice it until it's four AM and you're swearing it yourself
+notice it until it's four AM and you're swearing at yourself
 for transposing the data and the flags for the twentieth
 time that night. Let's look at strpos:
 
@@ -62,24 +62,25 @@ why.
 This sounds great at first, but it also means that PHP won't
 so much as raise a warning if you feed one of your functions
 a string where an integer should go. And then you try to set
-*$NumberOfFruit = $NumberOfOranges + $NumberOfGrapes;* and
+`$NumberOfFruit = $NumberOfOranges + $NumberOfGrapes;` and
 *NumberOfGrapes* is 6 but the user hit an extra key as they
-pressed enter so the server thinks they have *24[ oranges*,
-which evaluates to 1 somehow, and your application just dec-
-ided that there are 7 fruits instead of 30, and orders an
-extra case that you won't know what to do with.
+pressed enter so the server thinks they have `24[ oranges`,
+which evaluates to 1 because you're a good developer and used
+`intval`, and your application just decided there are 7 fruits
+instead of 30 and orders an extra case that you won't know
+what to do with.
 
 Thanks, PHP.
 
 
 **Function Congestion**
 
-There are something like 30 array-related functions. Perl has
-4. I don't think anyone's arguing that Perl's a great role
-model for much of anything, but we can probably just write a
-four-line **while** loop in the time it would take to look up
-**array_diff_ukey()** or **array_intersect_uassoc()** in the
-manual.
+There are something like 30 array-related functions in PHP.
+Perl has *4.* I don't think anyone's arguing that Perl's a
+great role model for much of anything, but we can probably
+just write a four-line `while` loop in the time it would take
+to look up `array_diff_ukey()` or `array_intersect_uassoc()`
+in the manual.
 
 
 What Peach is
@@ -87,14 +88,14 @@ What Peach is
 
 **Peach is predictable.** It takes arguments in the right order
 and it's never hard to figure out what a method is called.
-Search a string for a substring with *$String->Contains()*. Search
-an array for a value with *$Hash->Contains()*. Search the
-array's keys for a value with *$Hash->Keys()->Contains()*.
+Search a string for a substring with `$String->Contains()`. Search
+an array for a value with `$Hash->Contains()`. Search the
+array's keys for a value with `$Hash->Keys()->Contains()`.
 
 **Peach is considerate.** It never overwrites arguments. It
 never behaves irrationally in order to add "flexibility."
 
-**Peach is noisy.** Throws exceptions when it gets the wrong
+**Peach is vocal.** It throws exceptions when it gets the wrong
 types. You'll thank us.
 
 
@@ -121,7 +122,7 @@ something bad happens. It throws an exception so you can
 deal with it properly.
 
 **Peach doesn't repeat itself.** Check if a string contains
-a substring with $String->Contains(). Returns the position
+a substring with `$String->Contains()`. Returns the position
 of the substring, too.
 
 
@@ -132,19 +133,95 @@ The goal here is to make PHP nicer by exposing functionality
 that already exists, but in a better way. There are some
 different approaches that could work:
 
-* Redefine standard library in the global namespace
+##1) Redefine standard library in the global namespace
 
 This would seem to be the "cleanest" way to do this: we'd
 pick a single naming strategy, use function_rename() to rename
 any existing functions that have conflicting names, and we
 get on with life. Include the lib, use it. Done!
 
-**Pros:** Really easy to grasp. Instead of calling **strlen()**,
-call **string_length()**. Instead of **str_replace()**, call
-**string_replace()**. You don't have to be an object
+**Pros:** Really easy to grasp. Instead of calling `strlen()`,
+call `string_length()`. Instead of `str_replace()`, call
+`string_replace()`. You don't have to be an object
 oriented coder to grok it.
 
 **Cons** Would break compatibility with existing applications if
 existing functions were refactored. Using a lot of functions and
 having to type string_ every time sucks and makes for hard to
-read code. Doesn't do anything to fix variables.
+read code. Doesn't do anything to fix variables. Doesn't let us
+change anything in PHP that's a language construct. Doesn't give
+us a natural way to provide additional type information.
+
+##2) Present new library in new namespace
+
+This was the second option I considered, and given the
+procedural nature of PHP it made a lot of sense, as you can see:
+
+**Pros:** Fairly straightforward to implement. Not inherently
+object-oriented, so maybe a better fit for PHP.
+
+**Cons:** The syntax. Oh, wow, the syntax for PHP's namespaces
+is just so bad. No one wants to type \peach\string::contains(),
+because it's ugly nonsense. Doesn't do anything for types.
+
+##3) Use class instances and mutators
+
+And this is the third option, which you've been reading about.
+
+**Pros:** Instantly readable to anyone who knows Javascript,
+which automatically includes 90% of Web developers. Provides
+a straightforward mechanism for handling types. Attractive
+syntax.
+
+**Cons:** Sort of alien to the PHP paradigm. This is arguably
+a good thing. Requires obnoxious getter methods for any type
+other than string.
+
+Type Reference
+------------
+
+1. String
+2. Hash
+3. Integer (NIY)
+4. Float (NIY)
+
+Integer and Float types are still very, very in progress. I want
+there to be a better way to handle type-safe numbers than
+`$Int->Add($OtherInt->Get());` or other such nonsense. Currently
+I'm looking at implementing a lightweight parser with C `printf`
+style variable inclusion, so a math statement would look something
+like `$Int = $Int->Calc("@i * @i", $Int, $OtherInt);` which
+isn't ideal but is relatively concise.
+
+
+Method Reference
+--------------
+
+##Instance Methods
+`String(String)`
+**Supported datatypes:** `String`
+
+##Data Methods
+`Contains(String)`
+**Supported datatypes:** `(Peach) String`,`String`, `(Peach) Hash`, `Array`
+**Arguments:** (1) String containing substring to search for
+Checks whether the variable contains the data provided.
+
+`Length()`
+**Supported datatypes:** `String`, `Hash`
+Returns the length of the variable. For hashes, returns the number
+of keys.
+
+`Values()`
+**Supported datatypes:** `Hash`
+Returns a new, numeric-indexed hash of the source hash's values.
+
+`Strip(String)`
+**Supported datatypes:** `String`
+**Arguments:** (1) String containing all characters to remove
+from source string. 
+Returns a new string, sans the characters contained in the argument.
+
+`Keys()`
+**Supported datatypes:** `Hash`
+Returns a new, numeric-indexed hash of the source hash's keys.
