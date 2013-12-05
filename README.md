@@ -197,18 +197,34 @@ isn't ideal but is relatively concise.
 Method Reference
 --------------
 
-##Instance Methods
-`String(String)`
-**Supported datatypes:** `String`
+What follows is a brief rundown of all Peach's methods and mechanisms.
 
-##Data Methods
+###Instantiation
+
+####Peach::String(String)
+**Arguments:** (1) native PHP string.
+
+Creates a new PeachString. Optionally, a string variable or string literal
+may be passed to initialize the PeachString, otherwise it is created empty.
+
+####Peach::Hash(Array)
+**Arguments:** (1) native PHP array.
+
+Creates a new PeachHash. If provided in the first argument, a PHP array
+will be inserted.
+
+
+###String Methods
 `Contains(String)`
-**Supported datatypes:** `(Peach) String`,`String`, `(Peach) Hash`, `Array`
+**Supported datatypes:** `(Peach) String`,`String`
+
 **Arguments:** (1) String containing substring to search for
 Checks whether the variable contains the data provided.
 
 `Length()`
+
 **Supported datatypes:** `String`, `Hash`
+
 Returns the length of the variable. For hashes, returns the number
 of keys.
 
